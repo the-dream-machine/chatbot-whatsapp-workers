@@ -1,8 +1,11 @@
-```
-npm install
-npm run dev
-```
+Clone the repository and run the following commands to install the packages and run the server.
 
 ```
-npm run deploy
+bun install
+bun dev
+```
+
+Run this command to deploy
+```
+bun deploy
 ```
