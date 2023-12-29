@@ -4,7 +4,13 @@
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
-    "hono": "^3.11.8"
+    "@prisma/client": "^5.7.1",
+    "@trigger.dev/hono": "2.3.8",
+    "@trigger.dev/openai": "latest",
+    "@trigger.dev/sdk": "2.3.8",
+    "hono": "3.11.8",
+    "prisma": "^5.7.1",
+    "zod": "3.22.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231218.0",
