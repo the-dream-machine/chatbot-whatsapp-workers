@@ -16,7 +16,7 @@ app.post("/wa-message-received", async (c) => {
   const { message } = (await c.req.json()) as { message: WAWebJS.Message }
   const event = await trigger(c.env).sendEvent({
     name: "assistant.response",
-    payload: { message: message.body },
+    payload: { chatId: message.from, message: message.body },
   })
 
   return c.json({ event })

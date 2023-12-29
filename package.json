@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "@prisma/extension-accelerate": "^0.6.2",
     "@trigger.dev/hono": "2.3.8",
     "@trigger.dev/openai": "latest",
     "@trigger.dev/sdk": "2.3.8",

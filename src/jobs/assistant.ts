@@ -7,6 +7,10 @@ import { AppBindings } from "../types/AppBindings"
 import { waSendMessage } from "../utils/waSendMessage"
 import { waStartTyping } from "../utils/waStartTyping"
 import { waStopTyping } from "../utils/waStopTyping"
+import { prisma } from "../utils/prisma"
+import { ChatStatus } from "@prisma/client"
+import { addMessageOpenaiChat } from "../utils/addMessageOpenaiChat"
+import { newOpenaiChat } from "../utils/newOpenaiChat"
 
 interface Args {
   client: TriggerClient
@@ -22,73 +26,43 @@ export const assistantJob = ({ client, env }: Args) => {
   const job = client.defineJob({
     id: "assistant_generate_response",
     name: "Assistant generate response",
-    version: "0.0.3",
+    version: "0.0.4",
     trigger: eventTrigger({
       name: "assistant.response",
       schema: z.object({
+        chatId: z.string(),
         message: z.string(),
       }),
     }),
     integrations: { openai },
     run: async (payload, io, ctx) => {
-      const chatId = "254782648721@c.us"
+      const chatId = payload.chatId
+      const message = payload.message
+      const chat = await prisma.chat.findFirst({
+        where: { waChatId: chatId, status: ChatStatus.ACTIVE },
+        cacheStrategy: { ttl: 0 },
+      })
 
+      let responseMessage = ""
       await waStartTyping({ chatId })
-
-      io.logger.info("user", { message: payload.message })
-
-      const run = await io.openai.beta.threads.createAndRunUntilCompletion(
-        "create-thread",
-        {
-          model: "gpt-3.5-turbo-1106",
-          assistant_id: "asst_ZtIHxyRJW9rychDE8Hgeb7Lp",
-          thread: {
-            messages: [
-              {
-                role: "user",
-                content: payload.message,
-              },
-            ],
-          },
-        }
-      )
-
-      if (run.status !== "completed") {
-        throw new Error(
-          `Run finished with status ${run.status}: ${JSON.stringify(
-            run.last_error
-          )}`
-        )
+      if (chat) {
+        responseMessage = await addMessageOpenaiChat({
+          io,
+          threadId: chat.openaiThreadId,
+          message,
+        })
+      } else {
+        responseMessage = await newOpenaiChat({ io, chatId, message })
       }
-
-      // List all messages in the thread
-      const messages = await io.openai.beta.threads.messages.list(
-        "list-messages",
-        run.thread_id
-      )
-
-      const content = messages[0].content[0]
-      if (content.type === "image_file") {
-        throw new Error(
-          "The OpenAI response was an image but we expected text."
-        )
-      }
-
-      const responseMessage = content.text.value
-
-      io.logger.info("assistant", { message: responseMessage })
-
       await waStopTyping({ chatId })
+
       const whatsappMessage = await waSendMessage({
         chatId,
         message: responseMessage,
       })
-
       io.logger.debug("WhatsApp message", { whatsappMessage })
 
-      return {
-        message: responseMessage,
-      }
+      return { message: responseMessage }
     },
   })
 
