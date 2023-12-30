@@ -9,7 +9,7 @@ interface Args {
 }
 
 export const newOpenaiChat = async ({ io, message, chatId }: Args) => {
-  io.logger.info("user message", { message })
+  await io.logger.info("user message", { message })
 
   // Create and run new thread
   const run = await io.openai.beta.threads.createAndRunUntilCompletion(
@@ -27,7 +27,7 @@ export const newOpenaiChat = async ({ io, message, chatId }: Args) => {
     data: { waChatId: chatId, openaiThreadId: run.thread_id },
   })
 
-  io.logger.debug("Created Chat", { createdChat })
+  await io.logger.debug("Created Chat", { createdChat })
 
   if (run.status !== "completed") {
     throw new Error(
@@ -49,7 +49,7 @@ export const newOpenaiChat = async ({ io, message, chatId }: Args) => {
   }
 
   const responseMessage = content.text.value
-  io.logger.info("assistant", { message: responseMessage })
+  await io.logger.info("assistant", { message: responseMessage })
 
   return responseMessage
 }

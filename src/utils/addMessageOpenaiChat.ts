@@ -14,7 +14,7 @@ export const addMessageOpenaiChat = async ({ io, threadId, message }: Args) => {
     threadId,
     { role: "user", content: message }
   )
-  io.logger.info("Thread message", { threadMessage })
+  await io.logger.info("Thread message", { threadMessage })
 
   const createdRun = await io.openai.beta.threads.runs.create(
     "create-run",
@@ -25,7 +25,7 @@ export const addMessageOpenaiChat = async ({ io, threadId, message }: Args) => {
     }
   )
 
-  io.logger.info("Created run", { createdRun })
+  await io.logger.info("Created run", { createdRun })
 
   const run = await io.openai.beta.threads.runs.waitForCompletion(
     "wait-for-run",
@@ -33,7 +33,7 @@ export const addMessageOpenaiChat = async ({ io, threadId, message }: Args) => {
     createdRun.id
   )
 
-  io.logger.info("Completed run", { run })
+  await io.logger.info("Completed run", { run })
 
   if (run.status !== "completed") {
     throw new Error(
@@ -55,7 +55,7 @@ export const addMessageOpenaiChat = async ({ io, threadId, message }: Args) => {
   }
 
   const responseMessage = content.text.value
-  io.logger.info("assistant", { message: responseMessage })
+  await io.logger.info("assistant", { message: responseMessage })
 
   return responseMessage
 }

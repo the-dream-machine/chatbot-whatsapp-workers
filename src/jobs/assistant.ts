@@ -26,7 +26,7 @@ export const assistantJob = ({ client, env }: Args) => {
   const job = client.defineJob({
     id: "assistant_generate_response",
     name: "Assistant generate response",
-    version: "0.0.4",
+    version: "0.0.5",
     trigger: eventTrigger({
       name: "assistant.response",
       schema: z.object({
@@ -42,6 +42,8 @@ export const assistantJob = ({ client, env }: Args) => {
         where: { waChatId: chatId, status: ChatStatus.ACTIVE },
         cacheStrategy: { ttl: 0 },
       })
+
+      await io.logger.info("Prisma chat", { chat })
 
       let responseMessage = ""
       await waStartTyping({ chatId })
@@ -60,7 +62,7 @@ export const assistantJob = ({ client, env }: Args) => {
         chatId,
         message: responseMessage,
       })
-      io.logger.debug("WhatsApp message", { whatsappMessage })
+      await io.logger.debug("WhatsApp message", { whatsappMessage })
 
       return { message: responseMessage }
     },
