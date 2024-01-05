@@ -62,7 +62,9 @@ export const assistantJob = ({ client, env }: Args) => {
         chatId,
         message: responseMessage,
       })
-      await io.logger.debug("WhatsApp message", { whatsappMessage })
+      await io.logger.debug("WhatsApp message", {
+        whatsappMessage: JSON.parse(whatsappMessage),
+      })
 
       return { message: responseMessage }
     },
